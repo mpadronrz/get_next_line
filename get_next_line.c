@@ -1,0 +1,84 @@
+#include "get_next_line.h"
+#include <stdio.h>
+
+int	extra_bytes(char **str, char **line, int pos)
+{
+	char	*aux;
+	int		len;
+
+	len = ft_strlen(*line);
+	if (pos < 0 || pos == len)
+	{
+		*str = NULL;
+		return (0);
+	}
+	aux = malloc((pos + 1) * sizeof(char));
+	if (!aux)
+		return (1);
+	ft_strlcpy(aux, *line, pos + 1);
+	*str = malloc((len - pos + 1) * sizeof(char));
+	if (!*str)
+	{
+		free(aux);
+		return (1);
+	}
+	ft_strlcpy(*str, *line + pos, len - pos + 1);
+	free(*line);
+	*line = aux;
+	return (0);
+}
+
+int	read_line(int fd, char **line, int *pos)
+{
+	char	*buffer;
+	int		bytes;
+
+	buffer = ft_calloc(BUFFER_SIZE + 1, sizeof(char));
+	if (!buffer)
+		return (1);
+	while (*pos < 0)
+	{
+		bytes = read(fd, buffer, BUFFER_SIZE);
+		if (bytes == 0)
+			break ;
+		if (bytes == -1)
+		{
+			free(buffer);
+			return (1);
+		}
+		if (ft_stradd(line, buffer, bytes))
+		{
+			free(buffer);
+			return (1);
+		}
+		*pos = ft_charpos(*line, '\n');
+	}
+	free(buffer);
+	return (0);
+}
+
+char	*get_next_line(int fd)
+{
+	static char	*str = NULL;
+	char		*line;
+	int			pos;
+
+	if (fd < 0)
+		return (NULL);
+	line = str;
+	pos = ft_charpos(line, '\n');
+	if (pos < 0 && read_line(fd, &line, &pos))
+	{
+		if (line)
+			free(line);
+		str = NULL;
+		return (NULL);
+	}
+	if (extra_bytes(&str, &line, pos))
+	{
+		str = NULL;
+		free(line);
+		return (NULL);
+	}
+	return (line);
+}
