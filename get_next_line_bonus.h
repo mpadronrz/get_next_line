@@ -5,6 +5,10 @@
 # include <stddef.h>
 # include <unistd.h>
 
+# ifndef BUFFER_SIZE
+#  define BUFFER_SIZE 42
+# endif
+
 int		ft_strlen(char *str);
 size_t	ft_strlcpy(char *dest, const char *src, size_t size);
 void	*ft_calloc(int nmemb, int size);
